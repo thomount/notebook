@@ -47,9 +47,11 @@ class Log:
 			#rint(text_fmt.get_width(), text_fmt.get_height())
 			text_fmt = pygame.transform.rotate(text_fmt, self.data["angle"])
 			#print(text_fmt.get_width(), text_fmt.get_height())
+			x = self.data["pos"][0]
+			y = self.data["pos"][1]
 			if self.data["angle"] > 0:
-				pos = (self.data["pos"][0], self.data["pos"][1]-text_fmt.get_height())
-			else:
-				pos = self.data["pos"]
-			screen.blit(text_fmt, pos)
+				y -= text_fmt.get_height()
+			if abs(self.data["angle"]) > 90:
+				x -= text_fmt.get_width()
+			screen.blit(text_fmt, (x, y))
 
