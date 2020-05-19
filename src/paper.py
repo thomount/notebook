@@ -8,6 +8,8 @@ class Status:
 		self.last = []
 		self.w = []
 		self.last_t = 0
+		self.type = None
+		self.log = None
 
 class Note:
 	pass
@@ -39,3 +41,15 @@ class Log:
 			for i in range(len(self.data["line"])-1):
 				pygame.draw.line(screen, BLACK,self.data["line"][i], self.data["line"][i+1], self.data["width"][i])
 	
+		if self.type == "Word":
+			text = pygame.font.SysFont(self.data["font"], self.data["size"])
+			text_fmt = text.render(self.data["content"], True, self.data['color'])
+			#rint(text_fmt.get_width(), text_fmt.get_height())
+			text_fmt = pygame.transform.rotate(text_fmt, self.data["angle"])
+			#print(text_fmt.get_width(), text_fmt.get_height())
+			if self.data["angle"] > 0:
+				pos = (self.data["pos"][0], self.data["pos"][1]-text_fmt.get_height())
+			else:
+				pos = self.data["pos"]
+			screen.blit(text_fmt, pos)
+
