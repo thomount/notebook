@@ -8,10 +8,11 @@ BLACK = (0,0,0,1)
 WHITE = (255,255,255)
 
 pygame.init()
-screen = pygame.display.set_mode((480, 640), 0, 32)
+Size = (480, 640)
+screen = pygame.display.set_mode(Size, 0, 32)
 screen.fill(WHITE)
 
-book = paper.Book("../data/page", 8)
+book = paper.Book("../data/page", "../mod/paper.jpg", Size, 8)
 
 while True:
 	screen.fill(WHITE)

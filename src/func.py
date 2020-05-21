@@ -11,7 +11,7 @@ def getdeg(a, b):
 	#print(math.atan2(a[1]-b[1], b[0]-a[0])/math.pi * 180)
 	return (math.atan2(a[1]-b[1], b[0]-a[0])/math.pi * 180)
 
-keys = list(range(ord('0'), ord('9')+1))+list(range(ord('a'), ord('z')+1))+[ord(x) for x in list('[],./;\\\'`-=')]
+keys = list(range(ord('0'), ord('9')+1))+list(range(ord('a'), ord('z')+1))+[ord(x) for x in list('[],./;\\\'`-= ')]
 def getKey(s, x):
 	if s == False:
 		if x in keys:
