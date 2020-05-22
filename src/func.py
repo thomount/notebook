@@ -1,7 +1,16 @@
 import math
 def dist(a, b):
 	return ((a[0]-b[0])**2+(a[1]-b[1])**2)**0.5
-
+def signal(x):
+	return 1 if x > 0 else -1
+def one_circle(x):
+	while x > 180:
+		x -= 360
+	while x < -180:
+		x += 360
+	return x
+def getDir(a, b):
+	return (b[0]-a[0], b[1]-a[1])
 def getwidth(t):
 	#print(max(1, min(10, t)))
 	return max(1, min(5, t))

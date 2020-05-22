@@ -2,10 +2,12 @@ import pygame
 import pickle
 import sys
 import func
+import math
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 CoverWidth = 12
 EraserWidth = 5
+picpath = "../mod/pic.jpg"
 class Status:
 	def __init__(self):
 		self.clicked = False
@@ -75,21 +77,26 @@ class Page:
 					self.status.type = 'cover'
 				if e.key == pygame.K_e:
 					self.status.type = 'eraser'
+				if e.key == pygame.K_p:
+					self.status.type = 'picture'
 			if self.status.clicked == "inputing":
 				if e.key != pygame.K_RETURN:
 					if e.key != pygame.K_BACKSPACE:
 						if e.key != pygame.K_LSHIFT and e.key != pygame.K_RSHIFT:
 							self.status.log.data["content"] += func.getKey(self.status.shifted, e.key)
-						else:
-							self.status.shifted = True
+
 					elif len(self.status.log.data["content"]) > 0:
 						self.status.log.data["content"] = self.status.log.data["content"][:-1]
 				else:
 					self.save()
 					self.status.clicked = False
+			if e.key == pygame.K_LSHIFT or e.key == pygame.K_RSHIFT:
+				self.status.shifted = True
 		if e.type == pygame.KEYUP:
 			if e.key == pygame.K_LSHIFT or e.key == pygame.K_RSHIFT:
 				self.status.shifted = False
+
+				
 		if e.type == pygame.MOUSEBUTTONDOWN:
 			if self.status.clicked == False:
 				if e.button == 1:
@@ -104,6 +111,13 @@ class Page:
 						log = Log()
 						log.type ='Eraser'
 						log.data = [e.pos]
+						self.notes.append(log)
+						self.status.log = log
+						self.status.clicked = True
+					elif self.status.type == 'picture':
+						log = Log()
+						log.type = 'Picture'
+						log.data = [picpath, e.pos, e.pos]
 						self.notes.append(log)
 						self.status.log = log
 						self.status.clicked = True
@@ -123,6 +137,14 @@ class Page:
 					self.status.type = "word"
 					self.status.clicked = True
 					self.status.last = e.pos
+			if e.button == 4:
+				#print('up')
+				if self.status.clicked == 'inputing':
+					self.status.log.data['size'] = int(min(200, self.status.log.data['size']*1.2))
+			if e.button == 5:
+				#print('down')
+				if self.status.clicked == 'inputing':
+					self.status.log.data['size'] = int(max(10, self.status.log.data['size']*0.8))
 
 		if e.type == pygame.MOUSEBUTTONUP:
 			if self.status.clicked == True:
@@ -141,10 +163,10 @@ class Page:
 					log.type = "Word"
 					log.data = {
 						"font":pygame.font.get_default_font(), 
-						"size":int(func.dist(dir[0], dir[1])), 
+						"size":min(50, max(10, int(func.dist(dir[0], dir[1])))), 
 						"content": "", 
 						"color":BLACK, 
-						"angle":func.getdeg(dir[0], dir[1]), 
+						"angle":func.getdeg(dir[0], dir[1]) if self.status.shifted == False else 0, 
 						"pos":self.status.last
 					}
 					self.status.log = log
@@ -153,6 +175,11 @@ class Page:
 					self.notes.append(log)
 				if self.status.type == "cover":
 					self.status.log.data[1] = e.pos
+					self.status.clicked = False
+					self.status.type = None
+					self.save()
+				if self.status.type == "picture":
+					self.status.log.data[2] = e.pos
 					self.status.clicked = False
 					self.status.type = None
 					self.save()
@@ -173,6 +200,8 @@ class Page:
 			if self.status.clicked == True and self.status.type == "eraser":
 				if func.dist(e.pos, self.status.log.data[-1]) > 5:
 					self.status.log.data.append(e.pos)
+			if self.status.clicked == True and self.status.type == "picture":
+				self.status.log.data[2] = e.pos
 
 
 class Log:
@@ -209,6 +238,40 @@ class Log:
 				rect.fill((c[0],c[1],c[2], 50)) 
 				screen.blit(rect, (pos[0]-EraserWidth, pos[1]-EraserWidth)) 
 			#pygame.draw.line(screen, BLACK, self.data[0], self.data[1], self.data[2])
+		if self.type == 'Picture':
+			#print(self.data)
+			if (func.dist(self.data[1], self.data[2]) < 10):
+				return
+			'''
+			size = func.getDir(self.data[1],self.data[2])
+			img = pygame.transform.scale(pygame.image.load(self.data[0]), size)
+			screen.blit(img, self.data[1])
+			'''
+			img = pygame.image.load(self.data[0]).convert_alpha()
+			deg0 = func.getdeg((0, 0), img.get_size())
+			diag0 = func.dist((0, 0), img.get_size())
+			diag1 = func.dist(self.data[1], self.data[2])
+			deg1 = func.getdeg(self.data[1], self.data[2])
+			#print(deg1)
+			size1 = (int(img.get_width()/diag0*diag1), int(img.get_height()/diag0*diag1))
+			#img.fill((0,0,0,0))
+			deg = func.one_circle(deg1-deg0)
+			x, y = self.data[1]
+			img = pygame.transform.scale(img, size1)
+			img = pygame.transform.rotate(img, deg)
+			#deg = func.one_circle(deg - deg0)
+			#print(deg)
+			if deg > -90 and deg <= 0:
+				x += size1[1]*math.sin(deg*math.pi/180)
+			if deg > 0 and deg <= 90:
+				y -= size1[0]*math.sin(deg*math.pi/180)
+			if deg > 90 and deg <= 180:
+				y -= img.get_height()
+				x += size1[0]*math.cos(deg*math.pi/180)
+			if deg > -180 and deg <= -90:
+				x -= img.get_width()
+				y += size1[1]*math.cos(deg*math.pi/180)
+			screen.blit(img, (x, y))
 
 
 class Book:
